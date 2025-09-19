@@ -1,0 +1,4 @@
+@import "tailwindcss";
+
+/* optional: SVG text tweak used by the chart */
+svg text { dominant-baseline: hanging; }
