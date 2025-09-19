@@ -436,14 +436,14 @@ export default function MealGantt() {
               <div className="text-xs uppercase tracking-wide text-gray-500">Pinned</div>
               <div className="mt-2 space-y-3">
                 {pinned.length > 0 ? (
-                  pinned.slice(0, 3).map((p, idx) => (
+                  pinned.slice(0, 3).map((p) => (
                     <div key={p.id} className="p-2 rounded-md border bg-gray-50">
                       <div className="font-semibold">{p.title}</div>
                       <div className="text-sm text-gray-600">{p.parent}</div>
                       <div className="text-xs text-gray-500">{fmtDuration(p.duration_min)} ({p.start_min}-{p.start_min + p.duration_min}m)</div>
                       <div className="mt-2 text-sm text-gray-700 whitespace-pre-wrap">{p.description}</div>
                       <div className="mt-2">
-                        <button className="px-2 py-1 rounded-lg border text-sm" onClick={() => setPinned((cur) => cur.filter((_, i) => i !== idx))}>Unpin</button>
+                        <button className="px-2 py-1 rounded-lg border text-sm" onClick={() => setPinned((cur) => cur.filter((it) => it.id !== p.id))}>Unpin</button>
                       </div>
                     </div>
                   ))
@@ -495,14 +495,12 @@ export default function MealGantt() {
                       const h = rowHeight;
                       return (
                         <g key={s.id} onMouseEnter={(e) => setHover({ step: s, x: e.clientX, y: e.clientY })} onMouseMove={(e) => setHover({ step: s, x: e.clientX, y: e.clientY })} onMouseLeave={() => setHover(null)} onClick={() => {
-                          setPinned((cur) => {
-                            const arr = cur.slice();
-                            const existing = arr.findIndex((it) => it.id === s.id);
-                            if (existing >= 0) arr.splice(existing, 1);
-                            arr.push(s);
-                            while (arr.length > 3) arr.shift();
-                            return arr;
-                          });
+                            setPinned((cur) => {
+                              const arr = cur.filter((it) => it.id !== s.id);
+                              arr.unshift(s); // newest first
+                              while (arr.length > 3) arr.pop();
+                              return arr;
+                            });
                         }} style={{ cursor: "pointer" }}>
                               {/* main fill */}
                               <rect x={x} y={y} width={w} height={h} rx={10} fill={lane.color} opacity={0.85} />
