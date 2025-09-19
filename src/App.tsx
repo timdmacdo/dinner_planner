@@ -137,6 +137,8 @@ interface UxTimer {
   secStr: string;
   remaining: number; // seconds
   running: boolean;
+  cleared?: boolean;
+  mode?: 'down' | 'up';
 }
 
 // === Main Component ===
@@ -155,9 +157,9 @@ export default function MealGantt() {
 
   // ==== Timer bank state ====
   const [timers, setTimers] = useState<UxTimer[]>([
-    { id: "t1", name: "", minStr: "0", secStr: "00", remaining: 0, running: false },
-    { id: "t2", name: "", minStr: "0", secStr: "00", remaining: 0, running: false },
-    { id: "t3", name: "", minStr: "0", secStr: "00", remaining: 0, running: false },
+  { id: "t1", name: "", minStr: "0", secStr: "00", remaining: 0, running: false, cleared: true, mode: 'down' },
+  { id: "t2", name: "", minStr: "0", secStr: "00", remaining: 0, running: false, cleared: true, mode: 'down' },
+  { id: "t3", name: "", minStr: "0", secStr: "00", remaining: 0, running: false, cleared: true, mode: 'down' },
   ]);
 
   // global tick for timers
@@ -166,8 +168,16 @@ export default function MealGantt() {
       setTimers((prev) =>
         prev.map((t) => {
           if (!t.running) return t;
+          if (t.mode === 'up') {
+            // counting up
+            return { ...t, remaining: t.remaining + 1, running: true, cleared: false };
+          }
+          // counting down
           const next = Math.max(0, t.remaining - 1);
-          return { ...t, remaining: next, running: next > 0 && t.running };
+          const runningNow = next > 0 && t.running;
+          // if it hit zero, mark as expired (cleared=false) so UI shows expired state until user clears
+          const clearedNow = next === 0 ? false : (t.cleared ?? false);
+          return { ...t, remaining: next, running: runningNow, cleared: clearedNow };
         })
       );
     }, 1000);
@@ -186,20 +196,24 @@ export default function MealGantt() {
           const mins = Math.max(0, parseInt(t.minStr || "0", 10));
           const secs = Math.max(0, Math.min(59, parseInt(t.secStr || "0", 10)));
           remaining = mins * 60 + secs;
+          // if mode is 'up', start from 0 instead of mins*60
+          if (t.mode === 'up') remaining = 0;
         }
-        return { ...t, remaining, running: remaining > 0 };
+  // starting a timer means it's not in the 'cleared' state
+  return { ...t, remaining, running: true, cleared: false };
       })
     );
   };
 
   const stopTimer = (id: string) => setTimerField(id, { running: false });
-  const clearTimer = (id: string) => setTimerField(id, { running: false, remaining: 0 });
+  const clearTimer = (id: string) => setTimerField(id, { running: false, remaining: 0, cleared: true });
+  const removeTimer = (id: string) => setTimers((prev) => prev.filter((t) => t.id !== id));
   const addTimer = () =>
     setTimers((prev) => [
       ...prev,
-      { id: `t${prev.length + 1}`, name: "", minStr: "0", secStr: "00", remaining: 0, running: false },
+  { id: `t${prev.length + 1}`, name: "", minStr: "0", secStr: "00", remaining: 0, running: false, cleared: true, mode: 'down' },
     ]);
-  const resetTimers = () => setTimers((prev) => prev.map((t) => ({ ...t, running: false, remaining: 0 })));
+  const resetTimers = () => setTimers((prev) => prev.map((t) => ({ ...t, running: false, remaining: 0, cleared: true })));
 
   // ==== Grouping & stacking (separate rows for overlaps within each recipe) ====
   type LaneRow = { end: number };
@@ -209,8 +223,8 @@ export default function MealGantt() {
     // === People / responsibility ===
     type Person = { id: string; name: string; color: string };
     const [people, setPeople] = useState<Person[]>([
-      { id: "p1", name: "Alex", color: "#000000" },
-      { id: "p2", name: "Sam", color: "#10b981" },
+      { id: "p1", name: "Tim", color: "#fe9b22ff" },
+      { id: "p2", name: "Tiff", color: "#3e9751ff" },
     ]);
   // assignment: map from step id -> array of person ids responsible for that step
   const [stepAssignments, setStepAssignments] = useState<Record<string, string[]>>({});
@@ -297,7 +311,7 @@ export default function MealGantt() {
   const rowGap = 6; // px between rows
   const laneVPad = 12; // top/bottom padding per lane block
   const labelWidth = 180;
-  const topAxisPad = 40;
+  const topAxisPad = 80; // increased so minute labels are fully visible
   const pxPerMin = 12; // horizontal scale
 
   // compute vertical positions and chart size
@@ -317,7 +331,8 @@ export default function MealGantt() {
 
   // Hover / tooltip / pin
   const [hover, setHover] = useState<{ step: Step; x: number; y: number } | null>(null);
-  const [pinned, setPinned] = useState<Step | null>(null);
+  // keep ordered array of pinned steps (most recent appended); capped at 3
+  const [pinned, setPinned] = useState<Step[]>([]);
 
   // File handling
   const onFile = async (file: File) => {
@@ -346,7 +361,7 @@ export default function MealGantt() {
       setPlaying(false);
       setBaseMinutes(0);
       setJumpInput("0");
-      setPinned(null);
+  setPinned([]);
     } catch (e: any) {
       console.error(e);
       setError(e?.message ?? "Failed to parse file");
@@ -379,7 +394,7 @@ export default function MealGantt() {
       <div className="max-w-[1300px] mx-auto space-y-4">
         <header className="flex items-center justify-between gap-3">
           <div className="flex items-baseline gap-4">
-            <h1 className="text-2xl font-semibold">Meal Gantt v1</h1>
+            <h1 className="text-2xl font-semibold">Cooking Plan</h1>
             <div className="text-sm text-gray-600">Elapsed: <span className="font-mono text-base text-gray-900">{fmtMMSS(elapsedSeconds)}</span></div>
           </div>
           <div className="flex items-center gap-2">
@@ -414,16 +429,40 @@ export default function MealGantt() {
           <div className="p-3 rounded-lg border border-red-300 bg-red-50 text-red-800">{error}</div>
         )}
 
-        <div className="grid grid-cols-3 gap-4">
+  <div className="grid gap-4" style={{ gridTemplateColumns: '220px 1fr 420px' }}>
+          {/* Left pinned column */}
+          <div className="col-span-1">
+            <div className="p-4 rounded-2xl border bg-white shadow-sm">
+              <div className="text-xs uppercase tracking-wide text-gray-500">Pinned</div>
+              <div className="mt-2 space-y-3">
+                {pinned.length > 0 ? (
+                  pinned.slice(0, 3).map((p, idx) => (
+                    <div key={p.id} className="p-2 rounded-md border bg-gray-50">
+                      <div className="font-semibold">{p.title}</div>
+                      <div className="text-sm text-gray-600">{p.parent}</div>
+                      <div className="text-xs text-gray-500">{fmtDuration(p.duration_min)} ({p.start_min}-{p.start_min + p.duration_min}m)</div>
+                      <div className="mt-2 text-sm text-gray-700 whitespace-pre-wrap">{p.description}</div>
+                      <div className="mt-2">
+                        <button className="px-2 py-1 rounded-lg border text-sm" onClick={() => setPinned((cur) => cur.filter((_, i) => i !== idx))}>Unpin</button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-gray-500">Click a bar to pin step details here.</div>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Chart area */}
-          <div className="col-span-2 rounded-2xl border bg-gray-50 shadow-inner overflow-auto" style={{ maxHeight: 560 }} onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
+          <div className="rounded-2xl border bg-gray-50 shadow-inner overflow-auto" style={{ maxHeight: 560, paddingTop: 20 }} onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
             <svg width={chartWidth} height={chartHeight} className="block">
               {/* Background grid */}
               <g transform={`translate(${labelWidth}, ${topAxisPad})`}>
                 {ticks.map((m) => (
                   <g key={m}>
                     <line x1={m * pxPerMin} y1={0} x2={m * pxPerMin} y2={chartHeight - topAxisPad} stroke="#e5e7eb" strokeWidth={m % 10 === 0 ? 1.25 : 0.75} strokeDasharray={m % 10 === 0 ? "" : "4 4"} />
-                    <text x={m * pxPerMin} y={-6} fontSize={12} textAnchor="middle" fill="#6b7280">{m}</text>
+                    <text x={m * pxPerMin} y={-topAxisPad + 28} fontSize={12} textAnchor="middle" fill="#6b7280">{m}</text>
                   </g>
                 ))}
 
@@ -439,7 +478,8 @@ export default function MealGantt() {
                           const assignedAny = steps.filter((s) => s.parent === lane.parent).some((s) => (stepAssignments[s.id] || []).includes(p.id));
                           // place dots starting at -labelWidth + 16, spaced 18px apart
                           const dotX = -labelWidth + 16 + idx * 18;
-                          const dotY = 12;
+                          // place dots a bit lower so they don't overlap the top border / axis labels
+                          const dotY = 26;
                           return (
                             <g key={p.id} transform={`translate(${dotX}, ${dotY})`} style={{ cursor: 'pointer' }} onClick={() => toggleAssignLane(lane.parent, p.id)}>
                               <circle cx={0} cy={0} r={6} fill={p.color} opacity={assignedAny ? 1 : 0.25} stroke={assignedAny ? '#000000' : 'none'} strokeWidth={assignedAny ? 1.5 : 0} />
@@ -454,7 +494,16 @@ export default function MealGantt() {
                       const y = laneVPad + s.row * (rowHeight + rowGap);
                       const h = rowHeight;
                       return (
-                        <g key={s.id} onMouseEnter={(e) => setHover({ step: s, x: e.clientX, y: e.clientY })} onMouseMove={(e) => setHover({ step: s, x: e.clientX, y: e.clientY })} onMouseLeave={() => setHover(null)} onClick={() => setPinned(s)} style={{ cursor: "pointer" }}>
+                        <g key={s.id} onMouseEnter={(e) => setHover({ step: s, x: e.clientX, y: e.clientY })} onMouseMove={(e) => setHover({ step: s, x: e.clientX, y: e.clientY })} onMouseLeave={() => setHover(null)} onClick={() => {
+                          setPinned((cur) => {
+                            const arr = cur.slice();
+                            const existing = arr.findIndex((it) => it.id === s.id);
+                            if (existing >= 0) arr.splice(existing, 1);
+                            arr.push(s);
+                            while (arr.length > 3) arr.shift();
+                            return arr;
+                          });
+                        }} style={{ cursor: "pointer" }}>
                               {/* main fill */}
                               <rect x={x} y={y} width={w} height={h} rx={10} fill={lane.color} opacity={0.85} />
                               <rect x={x} y={y} width={w} height={h} rx={10} fill="#000" opacity={0.06} />
@@ -477,7 +526,7 @@ export default function MealGantt() {
                                 const dotR = 6;
                                 const dotSpacing = 18;
                                 const dotCx = x + Math.max(w - (pdx + 1) * dotSpacing - 8, 24);
-                                const dotCy = y + 12;
+                                const dotCy = y + 22;
                                 return (
                                   <g key={p.id} transform={`translate(${dotCx}, ${dotCy})`} onClick={(e) => { e.stopPropagation(); toggleAssignStep(s.id, p.id); }} style={{ cursor: 'pointer' }}>
                                     <circle cx={0} cy={0} r={dotR} fill={p.color} opacity={assigned ? 1 : 0.25} stroke={assigned ? '#000' : 'none'} strokeWidth={assigned ? 1.2 : 0} />
@@ -493,8 +542,8 @@ export default function MealGantt() {
                 {/* Playhead */}
                 <g>
                   <line x1={currentMin * pxPerMin} y1={0} x2={currentMin * pxPerMin} y2={chartHeight - topAxisPad} stroke="#111827" strokeWidth={2} />
-                  <rect x={currentMin * pxPerMin - 22} y={-26} width={44} height={20} rx={6} fill="#111827" />
-                  <text x={currentMin * pxPerMin} y={-11} fontSize={12} textAnchor="middle" fill="#fff">{Math.max(0, Math.round(currentMin))}m</text>
+                  <rect x={currentMin * pxPerMin - 22} y={-topAxisPad + 12} width={44} height={20} rx={6} fill="#111827" />
+                  <text x={currentMin * pxPerMin} y={-topAxisPad + 32} fontSize={12} textAnchor="middle" fill="#fff">{Math.max(0, Math.round(currentMin))}m</text>
                 </g>
               </g>
             </svg>
@@ -512,23 +561,42 @@ export default function MealGantt() {
                 </div>
               </div>
               <div className="mt-3 space-y-3">
-                {timers.map((t) => (
-                  <div key={t.id} className="p-3 rounded-xl border bg-gray-50">
-                    <input className="w-full px-2 py-1 mb-2 rounded-lg border" placeholder="Name (optional)" value={t.name} onChange={(e) => setTimerField(t.id, { name: e.target.value })} />
-                    <div className="flex items-center gap-2">
-                      <label className="text-xs text-gray-600">Min</label>
-                      <input className="w-14 px-2 py-1 rounded-lg border" value={t.minStr} onChange={(e) => setTimerField(t.id, { minStr: e.target.value.replace(/[^0-9]/g, "") })} />
-                      <label className="text-xs text-gray-600">Sec</label>
-                      <input className="w-14 px-2 py-1 rounded-lg border" value={t.secStr} onChange={(e) => setTimerField(t.id, { secStr: e.target.value.replace(/[^0-9]/g, "") })} />
-                      <div className="ml-auto font-mono text-base">{fmtMMSS(t.remaining)}</div>
+                {timers.map((t) => {
+                  // determine visual state
+                  const isCountingUp = t.running && t.mode === 'up';
+                  const isCountingDown = t.running && t.mode !== 'up' && t.remaining > 0;
+                  // consider whether this timer had a non-zero initial value
+                  const hadInitial = (parseInt(t.minStr || '0', 10) > 0) || (parseInt(t.secStr || '0', 10) > 0);
+                  // expired: reached zero while counting down and not cleared by user
+                  const isExpired = !t.running && t.mode !== 'up' && t.remaining === 0 && !t.cleared && hadInitial;
+                  // cleared: explicit user clear or default-new timer state
+                  const isCleared = (!!t.cleared) && t.remaining === 0 && t.mode !== 'up';
+                  const bg = isExpired ? '#fecaca' : isCountingUp ? '#bfdbfe' : isCountingDown ? '#bbf7d0' : isCleared ? '#f3f4f6' : '#f3f4f6';
+                  return (
+                    <div key={t.id} className="p-3 rounded-xl border" style={{ background: bg }}>
+                      <div className="flex items-center gap-2">
+                        <input className="flex-1 px-2 py-1 mb-2 rounded-lg border" placeholder="Name (optional)" value={t.name} onChange={(e) => setTimerField(t.id, { name: e.target.value })} />
+                        <select value={t.mode} onChange={(e) => setTimerField(t.id, { mode: e.target.value as 'up' | 'down' })} className="px-2 py-1 rounded-lg border text-sm">
+                          <option value="down">down</option>
+                          <option value="up">up</option>
+                        </select>
+                        <button className="px-2 py-1 rounded-lg border text-xs" onClick={() => removeTimer(t.id)}>Remove</button>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label className="text-xs text-gray-600">Min</label>
+                        <input className="w-14 px-2 py-1 rounded-lg border" value={t.minStr} onChange={(e) => setTimerField(t.id, { minStr: e.target.value.replace(/[^0-9]/g, "") })} />
+                        <label className="text-xs text-gray-600">Sec</label>
+                        <input className="w-14 px-2 py-1 rounded-lg border" value={t.secStr} onChange={(e) => setTimerField(t.id, { secStr: e.target.value.replace(/[^0-9]/g, "") })} />
+                        <div className="ml-auto font-mono text-base">{fmtMMSS(t.remaining)}</div>
+                      </div>
+                      <div className="mt-2 flex gap-2">
+                        <button className="px-2 py-1 rounded-lg border text-sm hover:bg-gray-50" onClick={() => startTimer(t.id)}>{t.running ? "Restart" : "Start"}</button>
+                        <button className="px-2 py-1 rounded-lg border text-sm hover:bg-gray-50" onClick={() => stopTimer(t.id)}>Stop</button>
+                        <button className="px-2 py-1 rounded-lg border text-sm hover:bg-gray-50" onClick={() => clearTimer(t.id)}>Clear</button>
+                      </div>
                     </div>
-                    <div className="mt-2 flex gap-2">
-                      <button className="px-2 py-1 rounded-lg border text-sm hover:bg-gray-50" onClick={() => startTimer(t.id)}>{t.running ? "Restart" : "Start"}</button>
-                      <button className="px-2 py-1 rounded-lg border text-sm hover:bg-gray-50" onClick={() => stopTimer(t.id)}>Stop</button>
-                      <button className="px-2 py-1 rounded-lg border text-sm hover:bg-gray-50" onClick={() => clearTimer(t.id)}>Clear</button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -551,21 +619,8 @@ export default function MealGantt() {
               </div>
             </div>
 
-            {/* Pinned detail panel */}
-            <div className="p-4 rounded-2xl border bg-white shadow-sm">
-              {pinned ? (
-                <div>
-                  <div className="text-xs uppercase tracking-wide text-gray-500">Pinned Step</div>
-                  <div className="mt-1 text-lg font-semibold">{pinned.title}</div>
-                  <div className="mt-1 text-gray-700">{pinned.parent}</div>
-                  <div className="mt-2 text-sm text-gray-600">{fmtDuration(pinned.duration_min)} ({pinned.start_min}-{pinned.start_min + pinned.duration_min}m)</div>
-                  <div className="mt-3 whitespace-pre-wrap text-sm">{pinned.description}</div>
-                  <button className="mt-4 px-3 py-2 rounded-xl border shadow-sm hover:bg-gray-50" onClick={() => setPinned(null)}>Unpin</button>
-                </div>
-              ) : (
-                <div className="text-gray-500">Click a bar to pin step details here.</div>
-              )}
-            </div>
+            {/* Pinned steps appear in the left column now (up to 3) */}
+            <div className="p-4 rounded-2xl border bg-white shadow-sm text-sm text-gray-500">Pinned steps now show to the left of the chart.</div>
           </div>
         </div>
       </div>
