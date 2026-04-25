@@ -241,7 +241,6 @@ export default function MealGantt() {
   const [timers, setTimers] = useState<UxTimer[]>([
   { id: "t1", name: "", minStr: "0", secStr: "00", remaining: 0, running: false, cleared: true, mode: 'down' },
   { id: "t2", name: "", minStr: "0", secStr: "00", remaining: 0, running: false, cleared: true, mode: 'down' },
-  { id: "t3", name: "", minStr: "0", secStr: "00", remaining: 0, running: false, cleared: true, mode: 'down' },
   ]);
 
   // global tick for timers
@@ -490,7 +489,6 @@ export default function MealGantt() {
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1 md:flex-row md:items-end md:justify-between">
               <div>
-                <div className="text-xs uppercase tracking-wide text-gray-500">Main Options</div>
                 <h1 className="text-2xl font-semibold">Cooking Plan</h1>
                 <div className="text-sm text-gray-600">
                   Elapsed: <span className="font-mono text-lg text-gray-900">{fmtMMSS(elapsedSeconds)}</span>
@@ -523,7 +521,6 @@ export default function MealGantt() {
         <section className="p-3 rounded-2xl border bg-white shadow-sm">
           <div className="mb-2 flex flex-col gap-1 md:flex-row md:items-end md:justify-between">
             <div>
-              <div className="text-xs uppercase tracking-wide text-gray-500">Gantt Chart</div>
               <h2 className="text-xl font-semibold">Meal Timeline</h2>
             </div>
             <div className="text-sm text-gray-500">Drag a JSON file onto the chart or tap a bar to pin details.</div>
@@ -624,7 +621,6 @@ export default function MealGantt() {
         <section className="p-3 rounded-2xl border bg-white shadow-sm">
           <div className="mb-2 flex items-end justify-between gap-3">
             <div>
-              <div className="text-xs uppercase tracking-wide text-gray-500">Timers</div>
               <h2 className="text-xl font-semibold">Kitchen Timers</h2>
             </div>
             <div className="flex gap-2">
@@ -671,7 +667,6 @@ export default function MealGantt() {
         <section className="p-3 rounded-2xl border bg-white shadow-sm">
           <div className="mb-2 flex flex-col gap-1 md:flex-row md:items-end md:justify-between">
             <div>
-              <div className="text-xs uppercase tracking-wide text-gray-500">Recipe Steps</div>
               <h2 className="text-xl font-semibold">Step Details</h2>
             </div>
             <div className="text-sm text-gray-500">Pinned steps stay at the top for quick reference.</div>
@@ -747,7 +742,6 @@ export default function MealGantt() {
 
         <section className="p-3 rounded-2xl border bg-white shadow-sm">
           <div className="mb-2">
-            <div className="text-xs uppercase tracking-wide text-gray-500">Library And People</div>
             <h2 className="text-xl font-semibold">Recipe Setup</h2>
           </div>
 
