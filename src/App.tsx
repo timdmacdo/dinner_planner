@@ -478,97 +478,57 @@ export default function MealGantt() {
     return arr;
   }, [maxEndMin]);
   const selectedRecipe = recipeLibrary.find((recipe) => recipe.path === selectedRecipePath);
+  const sortedSteps = useMemo(
+    () => steps.slice().sort((a, b) => a.start_min - b.start_min || a.parent.localeCompare(b.parent) || a.title.localeCompare(b.title)),
+    [steps]
+  );
 
   return (
-    <div className="min-h-screen w-full bg-white text-gray-900 p-6">
-      <div className="max-w-[1300px] mx-auto space-y-4">
-        <header className="flex items-center justify-between gap-3">
-          <div className="flex items-baseline gap-4">
-            <h1 className="text-2xl font-semibold">Cooking Plan</h1>
-            <div className="text-sm text-gray-600">Elapsed: <span className="font-mono text-base text-gray-900">{fmtMMSS(elapsedSeconds)}</span></div>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 px-2 py-1 rounded-xl border shadow-sm bg-white" title={selectedRecipe?.description}>
-              <select
-                className="max-w-44 px-2 py-1 rounded-lg border text-sm bg-white"
-                value={selectedRecipePath}
-                onChange={(e) => setSelectedRecipePath(e.target.value)}
-                disabled={recipeLibrary.length === 0 || libraryLoading}
-              >
-                {recipeLibrary.length === 0 ? (
-                  <option value="">No recipes found</option>
-                ) : (
-                  recipeLibrary.map((recipe) => (
-                    <option key={recipe.path} value={recipe.path}>{recipe.name}</option>
-                  ))
-                )}
-              </select>
-              <button
-                onClick={loadSelectedRecipe}
-                disabled={!selectedRecipePath || libraryLoading}
-                className="px-2 py-1 rounded-lg border text-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {libraryLoading ? "Loading..." : "Load Recipe"}
-              </button>
+    <div className="min-h-screen w-full bg-slate-50 text-gray-900 p-2 md:p-3">
+      <div className="max-w-[1000px] mx-auto space-y-3">
+        <section className="p-3 rounded-2xl border bg-white shadow-sm">
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1 md:flex-row md:items-end md:justify-between">
+              <div>
+                <div className="text-xs uppercase tracking-wide text-gray-500">Main Options</div>
+                <h1 className="text-2xl font-semibold">Cooking Plan</h1>
+                <div className="text-sm text-gray-600">
+                  Elapsed: <span className="font-mono text-lg text-gray-900">{fmtMMSS(elapsedSeconds)}</span>
+                </div>
+              </div>
             </div>
-            <label className="px-3 py-2 rounded-xl border shadow-sm cursor-pointer hover:bg-gray-50">
-              Load JSON
-              <input
-                type="file"
-                accept="application/json,.json,.txt"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) onFile(f);
-                }}
-              />
-            </label>
-            <button onClick={start} className="px-3 py-2 rounded-xl border shadow-sm hover:bg-gray-50">Start</button>
-            <button onClick={pause} className="px-3 py-2 rounded-xl border shadow-sm hover:bg-gray-50">Pause</button>
-            <button onClick={reset} className="px-3 py-2 rounded-xl border shadow-sm hover:bg-gray-50">Reset</button>
-            <div className="flex items-center gap-2 ml-3">
-              <input
-                className="w-24 px-2 py-1 rounded-lg border"
-                value={jumpInput}
-                onChange={(e) => setJumpInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') jump(); }}
-              />
-              <button onClick={jump} className="px-3 py-2 rounded-xl border shadow-sm hover:bg-gray-50">Jump (min)</button>
-            </div>
-          </div>
-        </header>
 
-        {error && (
-          <div className="p-3 rounded-lg border border-red-300 bg-red-50 text-red-800">{error}</div>
-        )}
+            {error && (
+              <div className="p-2 rounded-lg border border-red-300 bg-red-50 text-red-800">{error}</div>
+            )}
 
-  <div className="grid gap-4" style={{ gridTemplateColumns: '220px 1fr 420px' }}>
-          {/* Left pinned column */}
-          <div className="col-span-1">
-            <div className="p-4 rounded-2xl border bg-white shadow-sm">
-              <div className="text-xs uppercase tracking-wide text-gray-500">Pinned</div>
-              <div className="mt-2 space-y-3">
-                {pinned.length > 0 ? (
-                  pinned.slice(0, 3).map((p) => (
-                    <div key={p.id} className="p-2 rounded-md border bg-gray-50">
-                      <div className="font-semibold">{p.title}</div>
-                      <div className="text-sm text-gray-600">{p.parent}</div>
-                      <div className="text-xs text-gray-500">{fmtDuration(p.duration_min)} ({p.start_min}-{p.start_min + p.duration_min}m)</div>
-                      <div className="mt-2 text-sm text-gray-700 whitespace-pre-wrap">{p.description}</div>
-                      <div className="mt-2">
-                        <button className="px-2 py-1 rounded-lg border text-sm" onClick={() => setPinned((cur) => cur.filter((it) => it.id !== p.id))}>Unpin</button>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-gray-500">Click a bar to pin step details here.</div>
-                )}
+            <div className="p-2 rounded-2xl border bg-gray-50">
+              <div className="flex items-center gap-2">
+                <div className="shrink-0 text-sm font-semibold text-gray-700">Timeline Controls</div>
+                <button onClick={start} className="px-3 py-2 rounded-xl border bg-white text-sm shadow-sm hover:bg-gray-50">Start</button>
+                <button onClick={pause} className="px-3 py-2 rounded-xl border bg-white text-sm shadow-sm hover:bg-gray-50">Pause</button>
+                <button onClick={reset} className="px-3 py-2 rounded-xl border bg-white text-sm shadow-sm hover:bg-gray-50">Reset</button>
+                <input
+                  className="min-w-0 flex-1 px-3 py-2 rounded-xl border text-sm bg-white"
+                  value={jumpInput}
+                  onChange={(e) => setJumpInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') jump(); }}
+                />
+                <button onClick={jump} className="px-3 py-2 rounded-xl border bg-white text-sm shadow-sm hover:bg-gray-50">Jump Min</button>
               </div>
             </div>
           </div>
+        </section>
 
-          {/* Chart area */}
-          <div className="rounded-2xl border bg-gray-50 shadow-inner overflow-auto" style={{ maxHeight: 560, paddingTop: 20 }} onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
+        <section className="p-3 rounded-2xl border bg-white shadow-sm">
+          <div className="mb-2 flex flex-col gap-1 md:flex-row md:items-end md:justify-between">
+            <div>
+              <div className="text-xs uppercase tracking-wide text-gray-500">Gantt Chart</div>
+              <h2 className="text-xl font-semibold">Meal Timeline</h2>
+            </div>
+            <div className="text-sm text-gray-500">Drag a JSON file onto the chart or tap a bar to pin details.</div>
+          </div>
+          <div className="rounded-2xl border bg-gray-50 shadow-inner overflow-auto" style={{ maxHeight: 720, paddingTop: 10 }} onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
             <svg width={chartWidth} height={chartHeight} className="block">
               {/* Background grid */}
               <g transform={`translate(${labelWidth}, ${topAxisPad})`}>
@@ -659,81 +619,199 @@ export default function MealGantt() {
               </g>
             </svg>
           </div>
+        </section>
 
-          {/* Right sidebar: Timers + Pinned detail */}
-          <div className="col-span-1 space-y-4">
-            {/* Timer bank */}
-            <div className="p-4 rounded-2xl border bg-white shadow-sm">
-              <div className="flex items-baseline justify-between">
-                <div className="text-lg font-semibold">Timers</div>
-                <div className="flex gap-2">
-                  <button className="px-2 py-1 rounded-lg border text-xs hover:bg-gray-50" onClick={addTimer}>Add</button>
-                  <button className="px-2 py-1 rounded-lg border text-xs hover:bg-gray-50" onClick={resetTimers}>Clear All</button>
+        <section className="p-3 rounded-2xl border bg-white shadow-sm">
+          <div className="mb-2 flex items-end justify-between gap-3">
+            <div>
+              <div className="text-xs uppercase tracking-wide text-gray-500">Timers</div>
+              <h2 className="text-xl font-semibold">Kitchen Timers</h2>
+            </div>
+            <div className="flex gap-2">
+              <button className="px-3 py-2 rounded-xl border text-sm bg-white hover:bg-gray-50" onClick={addTimer}>Add</button>
+              <button className="px-3 py-2 rounded-xl border text-sm bg-white hover:bg-gray-50" onClick={resetTimers}>Clear All</button>
+            </div>
+          </div>
+          <div className="grid gap-2 md:grid-cols-2">
+            {timers.map((t) => {
+              const isCountingUp = t.running && t.mode === 'up';
+              const isCountingDown = t.running && t.mode !== 'up' && t.remaining > 0;
+              const hadInitial = (parseInt(t.minStr || '0', 10) > 0) || (parseInt(t.secStr || '0', 10) > 0);
+              const isExpired = !t.running && t.mode !== 'up' && t.remaining === 0 && !t.cleared && hadInitial;
+              const isCleared = (!!t.cleared) && t.remaining === 0 && t.mode !== 'up';
+              const bg = isExpired ? '#fecaca' : isCountingUp ? '#bfdbfe' : isCountingDown ? '#bbf7d0' : isCleared ? '#f3f4f6' : '#f3f4f6';
+              return (
+                <div key={t.id} className="p-2 rounded-2xl border" style={{ background: bg }}>
+                  <div className="flex items-center gap-2">
+                    <input className="min-w-0 flex-1 px-2 py-1.5 rounded-xl border text-sm" placeholder="Name (optional)" value={t.name} onChange={(e) => setTimerField(t.id, { name: e.target.value })} />
+                    <select value={t.mode} onChange={(e) => setTimerField(t.id, { mode: e.target.value as 'up' | 'down' })} className="px-2 py-1.5 rounded-xl border text-sm">
+                      <option value="down">down</option>
+                      <option value="up">up</option>
+                    </select>
+                    <button className="px-2 py-1.5 rounded-xl border text-sm bg-white" onClick={() => removeTimer(t.id)}>Remove</button>
+                  </div>
+                  <div className="mt-2 flex items-center gap-2">
+                    <label className="text-sm text-gray-600">Min</label>
+                    <input className="w-14 px-2 py-1.5 rounded-xl border text-sm" value={t.minStr} onChange={(e) => setTimerField(t.id, { minStr: e.target.value.replace(/[^0-9]/g, "") })} />
+                    <label className="text-sm text-gray-600">Sec</label>
+                    <input className="w-14 px-2 py-1.5 rounded-xl border text-sm" value={t.secStr} onChange={(e) => setTimerField(t.id, { secStr: e.target.value.replace(/[^0-9]/g, "") })} />
+                    <div className="ml-auto font-mono text-2xl">{fmtMMSS(t.remaining)}</div>
+                  </div>
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    <button className="px-2 py-1.5 rounded-xl border bg-white text-sm hover:bg-gray-50" onClick={() => startTimer(t.id)}>{t.running ? "Restart" : "Start"}</button>
+                    <button className="px-2 py-1.5 rounded-xl border bg-white text-sm hover:bg-gray-50" onClick={() => stopTimer(t.id)}>Stop</button>
+                    <button className="px-2 py-1.5 rounded-xl border bg-white text-sm hover:bg-gray-50" onClick={() => clearTimer(t.id)}>Clear</button>
+                  </div>
                 </div>
-              </div>
-              <div className="mt-3 space-y-3">
-                {timers.map((t) => {
-                  // determine visual state
-                  const isCountingUp = t.running && t.mode === 'up';
-                  const isCountingDown = t.running && t.mode !== 'up' && t.remaining > 0;
-                  // consider whether this timer had a non-zero initial value
-                  const hadInitial = (parseInt(t.minStr || '0', 10) > 0) || (parseInt(t.secStr || '0', 10) > 0);
-                  // expired: reached zero while counting down and not cleared by user
-                  const isExpired = !t.running && t.mode !== 'up' && t.remaining === 0 && !t.cleared && hadInitial;
-                  // cleared: explicit user clear or default-new timer state
-                  const isCleared = (!!t.cleared) && t.remaining === 0 && t.mode !== 'up';
-                  const bg = isExpired ? '#fecaca' : isCountingUp ? '#bfdbfe' : isCountingDown ? '#bbf7d0' : isCleared ? '#f3f4f6' : '#f3f4f6';
-                  return (
-                    <div key={t.id} className="p-3 rounded-xl border" style={{ background: bg }}>
-                      <div className="flex items-center gap-2">
-                        <input className="flex-1 px-2 py-1 mb-2 rounded-lg border" placeholder="Name (optional)" value={t.name} onChange={(e) => setTimerField(t.id, { name: e.target.value })} />
-                        <select value={t.mode} onChange={(e) => setTimerField(t.id, { mode: e.target.value as 'up' | 'down' })} className="px-2 py-1 rounded-lg border text-sm">
-                          <option value="down">down</option>
-                          <option value="up">up</option>
-                        </select>
-                        <button className="px-2 py-1 rounded-lg border text-xs" onClick={() => removeTimer(t.id)}>Remove</button>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <label className="text-xs text-gray-600">Min</label>
-                        <input className="w-14 px-2 py-1 rounded-lg border" value={t.minStr} onChange={(e) => setTimerField(t.id, { minStr: e.target.value.replace(/[^0-9]/g, "") })} />
-                        <label className="text-xs text-gray-600">Sec</label>
-                        <input className="w-14 px-2 py-1 rounded-lg border" value={t.secStr} onChange={(e) => setTimerField(t.id, { secStr: e.target.value.replace(/[^0-9]/g, "") })} />
-                        <div className="ml-auto font-mono text-base">{fmtMMSS(t.remaining)}</div>
-                      </div>
-                      <div className="mt-2 flex gap-2">
-                        <button className="px-2 py-1 rounded-lg border text-sm hover:bg-gray-50" onClick={() => startTimer(t.id)}>{t.running ? "Restart" : "Start"}</button>
-                        <button className="px-2 py-1 rounded-lg border text-sm hover:bg-gray-50" onClick={() => stopTimer(t.id)}>Stop</button>
-                        <button className="px-2 py-1 rounded-lg border text-sm hover:bg-gray-50" onClick={() => clearTimer(t.id)}>Clear</button>
-                      </div>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="p-3 rounded-2xl border bg-white shadow-sm">
+          <div className="mb-2 flex flex-col gap-1 md:flex-row md:items-end md:justify-between">
+            <div>
+              <div className="text-xs uppercase tracking-wide text-gray-500">Recipe Steps</div>
+              <h2 className="text-xl font-semibold">Step Details</h2>
+            </div>
+            <div className="text-sm text-gray-500">Pinned steps stay at the top for quick reference.</div>
+          </div>
+
+          <div className="space-y-3">
+            <div>
+              <div className="text-sm font-semibold text-gray-700">Pinned</div>
+              <div className="mt-2 grid gap-2 md:grid-cols-3">
+                {pinned.length > 0 ? (
+                  pinned.slice(0, 3).map((p) => (
+                    <div key={p.id} className="p-2 rounded-2xl border bg-amber-50">
+                      <div className="font-semibold">{p.title}</div>
+                      <div className="text-sm text-gray-600">{p.parent}</div>
+                      <div className="text-xs text-gray-500">{fmtDuration(p.duration_min)} ({p.start_min}-{p.start_min + p.duration_min}m)</div>
+                      <div className="mt-1 text-sm text-gray-700 whitespace-pre-wrap">{p.description}</div>
+                      <button className="mt-2 px-3 py-1 rounded-xl border bg-white text-sm" onClick={() => setPinned((cur) => cur.filter((it) => it.id !== p.id))}>Unpin</button>
                     </div>
-                  );
-                })}
+                  ))
+                ) : (
+                  <div className="md:col-span-3 p-2 rounded-2xl border bg-gray-50 text-gray-500">Tap any bar or step to pin details here.</div>
+                )}
               </div>
             </div>
 
-            {/* People panel */}
-            <div className="p-4 rounded-2xl border bg-white shadow-sm">
-              <div className="flex items-baseline justify-between">
-                <div className="text-lg font-semibold">People</div>
+            <div>
+              <div className="text-sm font-semibold text-gray-700">All Steps</div>
+              <div className="mt-2 grid gap-2 md:grid-cols-2">
+                {sortedSteps.map((s) => (
+                  <div key={s.id} className="p-2 rounded-2xl border bg-gray-50">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="font-semibold">{s.title}</div>
+                        <div className="text-sm text-gray-600">{s.parent}</div>
+                        <div className="text-xs text-gray-500">{fmtDuration(s.duration_min)} ({s.start_min}-{s.start_min + s.duration_min}m)</div>
+                      </div>
+                      <button
+                        className="shrink-0 px-3 py-2 rounded-xl border bg-white text-sm hover:bg-gray-50"
+                        onClick={() => {
+                          setPinned((cur) => {
+                            const arr = cur.filter((it) => it.id !== s.id);
+                            arr.unshift(s);
+                            while (arr.length > 3) arr.pop();
+                            return arr;
+                          });
+                        }}
+                      >
+                        Pin
+                      </button>
+                    </div>
+                    <div className="mt-1 text-sm text-gray-700 whitespace-pre-wrap">{s.description}</div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {people.map((p) => {
+                        const assigned = (stepAssignments[s.id] || []).includes(p.id);
+                        return (
+                          <button
+                            key={p.id}
+                            className="flex items-center gap-2 px-3 py-2 rounded-xl border bg-white text-sm"
+                            onClick={() => toggleAssignStep(s.id, p.id)}
+                          >
+                            <span style={{ width: 12, height: 12, borderRadius: 999, background: p.color, opacity: assigned ? 1 : 0.3 }} />
+                            <span>{p.name}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="mt-3">
+            </div>
+          </div>
+        </section>
+
+        <section className="p-3 rounded-2xl border bg-white shadow-sm">
+          <div className="mb-2">
+            <div className="text-xs uppercase tracking-wide text-gray-500">Library And People</div>
+            <h2 className="text-xl font-semibold">Recipe Setup</h2>
+          </div>
+
+          <div className="grid gap-2 md:grid-cols-2">
+            <div className="p-2 rounded-2xl border bg-gray-50">
+              <div className="text-sm font-semibold text-gray-700">Recipe Library</div>
+              {selectedRecipe?.description && (
+                <div className="mt-1 text-sm text-gray-600">{selectedRecipe.description}</div>
+              )}
+              <div className="mt-2 flex items-center gap-2">
+                <select
+                  className="min-w-0 flex-1 px-2 py-1.5 rounded-xl border text-sm bg-white"
+                  value={selectedRecipePath}
+                  onChange={(e) => setSelectedRecipePath(e.target.value)}
+                  disabled={recipeLibrary.length === 0 || libraryLoading}
+                >
+                  {recipeLibrary.length === 0 ? (
+                    <option value="">No recipes found</option>
+                  ) : (
+                    recipeLibrary.map((recipe) => (
+                      <option key={recipe.path} value={recipe.path}>{recipe.name}</option>
+                    ))
+                  )}
+                </select>
+                <button
+                  onClick={loadSelectedRecipe}
+                  disabled={!selectedRecipePath || libraryLoading}
+                  className="px-2 py-1.5 rounded-xl border bg-white text-sm shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {libraryLoading ? "Loading..." : "Load Recipe"}
+                </button>
+              </div>
+              <label className="mt-2 inline-flex px-2 py-1.5 rounded-xl border bg-white text-sm shadow-sm cursor-pointer hover:bg-gray-50">
+                Load JSON File
+                <input
+                  type="file"
+                  accept="application/json,.json,.txt"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) onFile(f);
+                  }}
+                />
+              </label>
+            </div>
+
+            <div className="p-2 rounded-2xl border bg-gray-50">
+              <div className="text-sm font-semibold text-gray-700">People</div>
+              <div className="text-xs text-gray-500">Tap dots on lanes or steps to assign work.</div>
+              <div className="mt-2 flex items-start gap-2">
                 <AddPersonForm onAdd={(name) => { if (name.trim()) addPerson(name.trim()); }} />
-                <div className="mt-3 space-y-2">
+                <div className="flex flex-wrap gap-2">
                   {people.map((p) => (
-                    <div key={p.id} className="flex items-center gap-3">
-                      <div style={{ width: 18, height: 18, borderRadius: 6, background: p.color, border: '1px solid #ccc' }} />
-                      <div className="text-sm flex-1">{p.name}</div>
+                    <div key={p.id} className="flex items-center gap-2 px-2 py-1 rounded-xl border bg-white">
+                      <div style={{ width: 16, height: 16, borderRadius: 6, background: p.color, border: '1px solid #ccc' }} />
+                      <div className="text-sm">{p.name}</div>
                       <button className="px-2 py-1 rounded-lg border text-xs" onClick={() => removePerson(p.id)}>Remove</button>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
-
-            {/* Pinned steps appear in the left column now (up to 3) */}
-            <div className="p-4 rounded-2xl border bg-white shadow-sm text-sm text-gray-500">Pinned steps now show to the left of the chart.</div>
           </div>
-        </div>
+        </section>
       </div>
 
       {/* Tooltip (portal-ish simple absolute box) */}
