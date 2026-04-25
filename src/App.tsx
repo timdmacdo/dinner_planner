@@ -13,6 +13,12 @@ type Step = {
 
 type DataFile = Step[]; // v1: an array of Step objects
 
+type RecipeLibraryItem = {
+  name: string;
+  path: string;
+  description?: string;
+};
+
 // === Demo data (for quick preview) ===
 const DEMO: DataFile = [
   {
@@ -118,6 +124,54 @@ function fmtDuration(mins: number) {
   return rem === 0 ? `${h}h` : `${h}h ${rem}m`;
 }
 
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Something went wrong";
+}
+
+function parseSteps(json: unknown): Step[] {
+  if (!Array.isArray(json)) throw new Error("Root must be an array of step objects");
+
+  return json.map((item, i) => {
+    if (item == null || typeof item !== "object") throw new Error(`Item ${i} must be an object`);
+
+    const o = item as Record<string, unknown>;
+    const missing = ["id", "parent", "title", "start_min", "duration_min", "description"].filter((k) => !(k in o));
+    if (missing.length) throw new Error(`Item ${i} missing: ${missing.join(", ")}`);
+
+    const step: Step = {
+      id: String(o.id),
+      parent: String(o.parent),
+      title: String(o.title),
+      start_min: Number(o.start_min),
+      duration_min: Number(o.duration_min),
+      description: String(o.description ?? ""),
+    };
+
+    if (Number.isNaN(step.start_min) || Number.isNaN(step.duration_min)) throw new Error(`Item ${i} has non-numeric start/duration`);
+    if (step.start_min < 0 || step.duration_min <= 0) throw new Error(`Item ${i} invalid start/duration values`);
+    return step;
+  });
+}
+
+function parseRecipeLibrary(json: unknown): RecipeLibraryItem[] {
+  if (!Array.isArray(json)) throw new Error("Recipe library manifest must be an array");
+
+  return json.map((item, i) => {
+    if (item == null || typeof item !== "object") throw new Error(`Recipe ${i} must be an object`);
+
+    const o = item as Record<string, unknown>;
+    if (typeof o.name !== "string" || typeof o.path !== "string") {
+      throw new Error(`Recipe ${i} must include string name and path fields`);
+    }
+
+    return {
+      name: o.name,
+      path: o.path,
+      description: typeof o.description === "string" ? o.description : undefined,
+    };
+  });
+}
+
 // Small controlled form to add a person
 function AddPersonForm({ onAdd }: { onAdd: (name: string) => void }) {
   const [val, setVal] = useState("");
@@ -145,6 +199,9 @@ interface UxTimer {
 export default function MealGantt() {
   const [steps, setSteps] = useState<DataFile>(DEMO);
   const [error, setError] = useState<string | null>(null);
+  const [recipeLibrary, setRecipeLibrary] = useState<RecipeLibraryItem[]>([]);
+  const [selectedRecipePath, setSelectedRecipePath] = useState("");
+  const [libraryLoading, setLibraryLoading] = useState(false);
 
   // time state (in minutes)
   const [playing, setPlaying] = useState(false);
@@ -154,6 +211,31 @@ export default function MealGantt() {
   const elapsedMs = useNowPlaying(playing);
   const currentMin = useMemo(() => baseMinutes + (playing ? elapsedMs / 60000 : 0), [baseMinutes, playing, elapsedMs]);
   const elapsedSeconds = useMemo(() => Math.floor(currentMin * 60), [currentMin]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadRecipeLibrary = async () => {
+      try {
+        const res = await fetch("/recipes/manifest.json");
+        if (!res.ok) throw new Error(`Failed to load recipe library (${res.status})`);
+
+        const parsed = parseRecipeLibrary(await res.json());
+        if (!cancelled) {
+          setRecipeLibrary(parsed);
+          setSelectedRecipePath(parsed[0]?.path ?? "");
+        }
+      } catch (e) {
+        if (!cancelled) setError(getErrorMessage(e));
+      }
+    };
+
+    loadRecipeLibrary();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // ==== Timer bank state ====
   const [timers, setTimers] = useState<UxTimer[]>([
@@ -334,37 +416,44 @@ export default function MealGantt() {
   // keep ordered array of pinned steps (most recent appended); capped at 3
   const [pinned, setPinned] = useState<Step[]>([]);
 
+  const resetPlanUi = () => {
+    setPlaying(false);
+    setBaseMinutes(0);
+    setJumpInput("0");
+    setPinned([]);
+    setStepAssignments({});
+  };
+
   // File handling
   const onFile = async (file: File) => {
     setError(null);
     try {
       const text = await file.text();
-      const json = JSON.parse(text);
-      if (!Array.isArray(json)) throw new Error("Root must be an array of step objects");
-      const parsed: Step[] = json.map((o, i) => {
-        const missing = ["id", "parent", "title", "start_min", "duration_min", "description"].filter((k) => !(k in o));
-        if (missing.length) throw new Error(`Item ${i} missing: ${missing.join(", ")}`);
-        const s: Step = {
-          id: String(o.id),
-          parent: String(o.parent),
-          title: String(o.title),
-          start_min: Number(o.start_min),
-          duration_min: Number(o.duration_min),
-          description: String(o.description ?? ""),
-        };
-        if (Number.isNaN(s.start_min) || Number.isNaN(s.duration_min)) throw new Error(`Item ${i} has non-numeric start/duration`);
-        if (s.start_min < 0 || s.duration_min <= 0) throw new Error(`Item ${i} invalid start/duration values`);
-        return s;
-      });
+      const parsed = parseSteps(JSON.parse(text));
       setSteps(parsed);
-      // reset timeline
-      setPlaying(false);
-      setBaseMinutes(0);
-      setJumpInput("0");
-  setPinned([]);
-    } catch (e: any) {
+      resetPlanUi();
+    } catch (e) {
       console.error(e);
-      setError(e?.message ?? "Failed to parse file");
+      setError(getErrorMessage(e));
+    }
+  };
+
+  const loadSelectedRecipe = async () => {
+    if (!selectedRecipePath) return;
+
+    setError(null);
+    setLibraryLoading(true);
+    try {
+      const res = await fetch(selectedRecipePath);
+      if (!res.ok) throw new Error(`Failed to load recipe (${res.status})`);
+
+      setSteps(parseSteps(await res.json()));
+      resetPlanUi();
+    } catch (e) {
+      console.error(e);
+      setError(getErrorMessage(e));
+    } finally {
+      setLibraryLoading(false);
     }
   };
 
@@ -388,6 +477,7 @@ export default function MealGantt() {
     for (let m = 0; m <= maxEndMin; m += 5) arr.push(m);
     return arr;
   }, [maxEndMin]);
+  const selectedRecipe = recipeLibrary.find((recipe) => recipe.path === selectedRecipePath);
 
   return (
     <div className="min-h-screen w-full bg-white text-gray-900 p-6">
@@ -398,6 +488,29 @@ export default function MealGantt() {
             <div className="text-sm text-gray-600">Elapsed: <span className="font-mono text-base text-gray-900">{fmtMMSS(elapsedSeconds)}</span></div>
           </div>
           <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 px-2 py-1 rounded-xl border shadow-sm bg-white" title={selectedRecipe?.description}>
+              <select
+                className="max-w-44 px-2 py-1 rounded-lg border text-sm bg-white"
+                value={selectedRecipePath}
+                onChange={(e) => setSelectedRecipePath(e.target.value)}
+                disabled={recipeLibrary.length === 0 || libraryLoading}
+              >
+                {recipeLibrary.length === 0 ? (
+                  <option value="">No recipes found</option>
+                ) : (
+                  recipeLibrary.map((recipe) => (
+                    <option key={recipe.path} value={recipe.path}>{recipe.name}</option>
+                  ))
+                )}
+              </select>
+              <button
+                onClick={loadSelectedRecipe}
+                disabled={!selectedRecipePath || libraryLoading}
+                className="px-2 py-1 rounded-lg border text-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {libraryLoading ? "Loading..." : "Load Recipe"}
+              </button>
+            </div>
             <label className="px-3 py-2 rounded-xl border shadow-sm cursor-pointer hover:bg-gray-50">
               Load JSON
               <input

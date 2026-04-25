@@ -1,0 +1,58 @@
+[
+  {
+    "id": "start_rice",
+    "parent": "Rice",
+    "title": "Start rice",
+    "start_min": 0,
+    "duration_min": 25,
+    "description": "Rinse rice, add water and salt, then cook covered."
+  },
+  {
+    "id": "rest_rice",
+    "parent": "Rice",
+    "title": "Rest and fluff rice",
+    "start_min": 25,
+    "duration_min": 10,
+    "description": "Keep covered off heat, then fluff with a fork."
+  },
+  {
+    "id": "brown_beef",
+    "parent": "Taco Filling",
+    "title": "Brown beef",
+    "start_min": 5,
+    "duration_min": 8,
+    "description": "Brown ground beef in a skillet, breaking it into small pieces."
+  },
+  {
+    "id": "season_beef",
+    "parent": "Taco Filling",
+    "title": "Season taco meat",
+    "start_min": 13,
+    "duration_min": 10,
+    "description": "Add spices and a splash of water, then simmer until saucy."
+  },
+  {
+    "id": "warm_beans",
+    "parent": "Beans",
+    "title": "Warm beans",
+    "start_min": 12,
+    "duration_min": 12,
+    "description": "Warm beans with cumin, salt, and a little water."
+  },
+  {
+    "id": "prep_toppings",
+    "parent": "Toppings",
+    "title": "Prep toppings",
+    "start_min": 8,
+    "duration_min": 18,
+    "description": "Chop lettuce, tomatoes, cilantro, onion, and lime wedges."
+  },
+  {
+    "id": "warm_tortillas",
+    "parent": "Tortillas",
+    "title": "Warm tortillas",
+    "start_min": 26,
+    "duration_min": 6,
+    "description": "Warm tortillas in a dry skillet or wrapped in foil."
+  }
+]

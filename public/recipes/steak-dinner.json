@@ -1,0 +1,50 @@
+[
+  {
+    "id": "preheat_oven",
+    "parent": "Side - Roasted Veg",
+    "title": "Preheat oven to 425F",
+    "start_min": 0,
+    "duration_min": 65,
+    "description": "Move rack to middle. Put sheet pan in oven to preheat."
+  },
+  {
+    "id": "cut_veg",
+    "parent": "Side - Roasted Veg",
+    "title": "Cut vegetables",
+    "start_min": 3,
+    "duration_min": 12,
+    "description": "Cut into 1-inch chunks. Toss with oil and salt."
+  },
+  {
+    "id": "roast_veg",
+    "parent": "Side - Roasted Veg",
+    "title": "Roast vegetables",
+    "start_min": 16,
+    "duration_min": 30,
+    "description": "Spread on hot pan, then stir at 15 minutes."
+  },
+  {
+    "id": "sear_steaks",
+    "parent": "Main - Ribeye",
+    "title": "Sear steaks",
+    "start_min": 25,
+    "duration_min": 8,
+    "description": "Pat dry. Heat pan until just smoking. Cook 2-3 minutes per side, then rest 5 minutes."
+  },
+  {
+    "id": "make_pan_sauce",
+    "parent": "Main - Ribeye",
+    "title": "Make pan sauce",
+    "start_min": 33,
+    "duration_min": 10,
+    "description": "Deglaze with stock or wine, reduce, and finish with butter."
+  },
+  {
+    "id": "greens_salad",
+    "parent": "Salad",
+    "title": "Dress greens",
+    "start_min": 40,
+    "duration_min": 6,
+    "description": "Toss greens with vinaigrette just before serving."
+  }
+]

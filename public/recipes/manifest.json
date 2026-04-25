@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Steak Dinner",
+    "path": "/recipes/steak-dinner.json",
+    "description": "Ribeye with roasted vegetables and salad."
+  },
+  {
+    "name": "Pasta Night",
+    "path": "/recipes/pasta-night.json",
+    "description": "Tomato pasta with garlic bread and a simple salad."
+  },
+  {
+    "name": "Taco Night",
+    "path": "/recipes/taco-night.json",
+    "description": "Beef tacos with rice, beans, and toppings."
+  }
+]
