@@ -1,0 +1,58 @@
+[
+  {
+    "id": "start_sauce",
+    "parent": "Tomato Sauce",
+    "title": "Start tomato sauce",
+    "start_min": 0,
+    "duration_min": 35,
+    "description": "Soften onion and garlic, add tomatoes, then simmer gently."
+  },
+  {
+    "id": "season_sauce",
+    "parent": "Tomato Sauce",
+    "title": "Season and reduce sauce",
+    "start_min": 20,
+    "duration_min": 20,
+    "description": "Taste for salt and acidity. Reduce until the sauce coats a spoon."
+  },
+  {
+    "id": "boil_water",
+    "parent": "Pasta",
+    "title": "Boil salted water",
+    "start_min": 10,
+    "duration_min": 15,
+    "description": "Use a large pot and salt the water once it comes to a boil."
+  },
+  {
+    "id": "cook_pasta",
+    "parent": "Pasta",
+    "title": "Cook pasta",
+    "start_min": 25,
+    "duration_min": 11,
+    "description": "Cook until just shy of al dente and reserve a cup of pasta water."
+  },
+  {
+    "id": "finish_pasta",
+    "parent": "Pasta",
+    "title": "Finish pasta in sauce",
+    "start_min": 36,
+    "duration_min": 5,
+    "description": "Toss pasta with sauce, pasta water, and cheese until glossy."
+  },
+  {
+    "id": "toast_garlic_bread",
+    "parent": "Garlic Bread",
+    "title": "Toast garlic bread",
+    "start_min": 24,
+    "duration_min": 12,
+    "description": "Spread garlic butter on bread and toast until browned."
+  },
+  {
+    "id": "dress_salad",
+    "parent": "Salad",
+    "title": "Dress salad",
+    "start_min": 38,
+    "duration_min": 4,
+    "description": "Toss greens and vegetables with dressing right before serving."
+  }
+]
