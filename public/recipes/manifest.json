@@ -18,5 +18,10 @@
     "name": "Gluten-Free Cinnamon Rolls",
     "path": "/recipes/gluten-free-cinnamon-rolls.json",
     "description": "Yeasted gluten-free dough, cinnamon filling, baked and frosted with cream cheese icing."
+  },
+  {
+    "name": "Lomo Saltado with Roasted Sweet Potato Wedges",
+    "path": "/recipes/lomo-saltado-sweet-potato-wedges.json",
+    "description": "Beef tenderloin stir-fried with aji amarillo, soy, and vinegar, served with roasted sweet potato wedges."
   }
 ]

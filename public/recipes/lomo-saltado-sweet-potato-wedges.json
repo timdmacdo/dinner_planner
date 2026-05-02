@@ -1,0 +1,82 @@
+[
+  {
+    "id": "prep_wedges",
+    "parent": "Sweet Potato Wedges",
+    "title": "Preheat oven and prep wedges",
+    "start_min": 0,
+    "duration_min": 10,
+    "description": "Preheat oven to 400°F. Cut sweet potatoes (1.3 lb, about 2 medium) into large wedges, then toss with olive oil (1.5 tbsp), smoked paprika (0.5 tsp), and kosher salt (0.5 tsp) on a sheet pan."
+  },
+  {
+    "id": "roast_wedges_first_side",
+    "parent": "Sweet Potato Wedges",
+    "title": "Roast wedges on first side",
+    "start_min": 10,
+    "duration_min": 40,
+    "description": "Spread sweet potato wedges in a single layer with one cut side down and roast until the first side is deeply browned."
+  },
+  {
+    "id": "finish_roasting_wedges",
+    "parent": "Sweet Potato Wedges",
+    "title": "Flip and finish roasting wedges",
+    "start_min": 50,
+    "duration_min": 18,
+    "description": "Flip each sweet potato wedge to the other cut side and roast until deeply caramelized and tender when pierced with a knife."
+  },
+  {
+    "id": "season_beef",
+    "parent": "Lomo Saltado",
+    "title": "Season and rest beef",
+    "start_min": 25,
+    "duration_min": 15,
+    "description": "Pat beef tenderloin (12 oz) very dry, toss with ground cumin (0.5 tsp), kosher salt (0.5 tsp), and black pepper to taste, then rest at room temperature."
+  },
+  {
+    "id": "mix_sauce",
+    "parent": "Lomo Saltado",
+    "title": "Mix aji amarillo sauce",
+    "start_min": 40,
+    "duration_min": 5,
+    "description": "Whisk aji amarillo paste (1 tbsp), soy sauce (2 tbsp), red wine vinegar (1.5 tbsp), and oyster sauce (1 tsp, optional) in a small bowl and keep it near the stove."
+  },
+  {
+    "id": "sear_beef",
+    "parent": "Lomo Saltado",
+    "title": "Sear beef",
+    "start_min": 55,
+    "duration_min": 5,
+    "description": "Heat a large skillet or wok until smoking, add half of the neutral oil (1 tbsp), and sear beef tenderloin in a single layer. Transfer beef to a plate."
+  },
+  {
+    "id": "stir_fry_aromatics",
+    "parent": "Lomo Saltado",
+    "title": "Stir-fry onion and garlic",
+    "start_min": 60,
+    "duration_min": 3,
+    "description": "Return the pan to high heat, add remaining neutral oil (1 tbsp), stir-fry red onion wedges (1 cup) until softened at the edges, then add minced garlic (3 cloves)."
+  },
+  {
+    "id": "add_tomatoes_and_sauce",
+    "parent": "Lomo Saltado",
+    "title": "Add tomatoes and sauce",
+    "start_min": 63,
+    "duration_min": 2,
+    "description": "Add Roma tomato wedges (2 tomatoes) and toss until warmed through. Pour in the aji amarillo sauce and reduce briefly while scraping up browned bits."
+  },
+  {
+    "id": "combine_lomo",
+    "parent": "Lomo Saltado",
+    "title": "Combine and finish lomo",
+    "start_min": 65,
+    "duration_min": 1,
+    "description": "Return beef tenderloin and resting juices to the pan, toss just long enough to coat and warm through, then remove from heat."
+  },
+  {
+    "id": "plate_and_serve",
+    "parent": "Serving",
+    "title": "Plate and serve",
+    "start_min": 68,
+    "duration_min": 4,
+    "description": "Divide sweet potato wedges across plates, spoon lomo saltado alongside, and serve with lime wedges (1 lime)."
+  }
+]
