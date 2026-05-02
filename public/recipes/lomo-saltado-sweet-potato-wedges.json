@@ -40,6 +40,14 @@
     "description": "Whisk aji amarillo paste (1 tbsp), soy sauce (2 tbsp), red wine vinegar (1.5 tbsp), and oyster sauce (1 tsp, optional) in a small bowl and keep it near the stove."
   },
   {
+    "id": "prep_vegetables",
+    "parent": "Lomo Saltado",
+    "title": "Prep vegetables and lime",
+    "start_min": 45,
+    "duration_min": 10,
+    "description": "Cut red onion (1 cup) into thick wedges and separate the layers. Cut Roma tomatoes (2 tomatoes) into thick wedges, mince garlic (3 cloves), and cut lime (1 lime) into serving wedges."
+  },
+  {
     "id": "sear_beef",
     "parent": "Lomo Saltado",
     "title": "Sear beef",
@@ -77,6 +85,6 @@
     "title": "Plate and serve",
     "start_min": 68,
     "duration_min": 4,
-    "description": "Divide sweet potato wedges across plates, spoon lomo saltado alongside, and serve with lime wedges (1 lime)."
+    "description": "Divide sweet potato wedges across plates, spoon lomo saltado alongside, and serve with lime wedges."
   }
 ]
