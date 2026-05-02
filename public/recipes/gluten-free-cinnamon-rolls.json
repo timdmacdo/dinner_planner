@@ -1,0 +1,98 @@
+[
+  {
+    "id": "mix_dry",
+    "parent": "Dough",
+    "title": "Mix dry ingredients",
+    "start_min": 0,
+    "duration_min": 4,
+    "description": "In a stand mixer fitted with the paddle attachment, combine King Arthur gluten-free bread flour (680 g), sugar (65 g), instant yeast (2.25 tsp), salt (2 tsp), and baking powder (1 tsp) until evenly mixed."
+  },
+  {
+    "id": "mix_wet_dough",
+    "parent": "Dough",
+    "title": "Add liquids and knead in mixer",
+    "start_min": 4,
+    "duration_min": 8,
+    "description": "With the mixer on low, slowly add water (295 ml), whole milk (236 ml), eggs (2), and melted butter (6 tbsp), then turn to medium and mix 3 minutes until very smooth (thick cookie dough)."
+  },
+  {
+    "id": "scrape_bowl",
+    "parent": "Dough",
+    "title": "Scrape bowl",
+    "start_min": 12,
+    "duration_min": 2,
+    "description": "Scrape the bottom and sides of the bowl with a spatula lightly coated with neutral oil."
+  },
+  {
+    "id": "chill_dough",
+    "parent": "Dough",
+    "title": "Refrigerate dough",
+    "start_min": 14,
+    "duration_min": 20,
+    "description": "Cover tightly with plastic wrap and refrigerate so the dough is easier to roll."
+  },
+  {
+    "id": "prep_pan_filling",
+    "parent": "Filling & shaping",
+    "title": "Cinnamon sugar and grease pan",
+    "start_min": 34,
+    "duration_min": 4,
+    "description": "Mix brown sugar (0.33 cup) and cinnamon (2 tbsp) in a small bowl, then lightly grease a 9×13-inch baking dish with butter or cooking spray."
+  },
+  {
+    "id": "shape_and_fill",
+    "parent": "Filling & shaping",
+    "title": "Roll, fill, cut, and pan rolls",
+    "start_min": 38,
+    "duration_min": 18,
+    "description": "Turn dough onto a surface dusted with gluten-free flour, shape into a ball, and roll to a 15×15-inch square. Spread melted butter (8 tbsp) over the dough, sprinkle with the cinnamon-sugar, cut twelve 1.25-inch strips with a pizza cutter, roll each strip, and place in the dish."
+  },
+  {
+    "id": "rise_rolls",
+    "parent": "Rise & bake",
+    "title": "Proof until doubled",
+    "start_min": 56,
+    "duration_min": 52,
+    "description": "Cover pan with plastic wrap or a towel. Rest in a warm spot 45–60 minutes until about doubled."
+  },
+  {
+    "id": "preheat_oven",
+    "parent": "Rise & bake",
+    "title": "Preheat oven to 350°F",
+    "start_min": 93,
+    "duration_min": 15,
+    "description": "Preheat while the rolls finish rising."
+  },
+  {
+    "id": "bake_rolls",
+    "parent": "Rise & bake",
+    "title": "Bake rolls",
+    "start_min": 108,
+    "duration_min": 32,
+    "description": "Bake at 350°F until slightly golden brown, about 30–35 minutes."
+  },
+  {
+    "id": "cool_rolls",
+    "parent": "Rise & bake",
+    "title": "Cool slightly",
+    "start_min": 140,
+    "duration_min": 15,
+    "description": "Rest until just slightly warm to the touch before frosting."
+  },
+  {
+    "id": "make_frosting",
+    "parent": "Cream cheese frosting",
+    "title": "Beat frosting",
+    "start_min": 56,
+    "duration_min": 10,
+    "description": "Beat cream cheese (8 oz) until smooth, then beat in butter (4 tbsp), powdered sugar (0.33 cup), and vanilla extract (2 tsp) until combined."
+  },
+  {
+    "id": "spread_serve",
+    "parent": "Cream cheese frosting",
+    "title": "Ice and serve",
+    "start_min": 155,
+    "duration_min": 5,
+    "description": "Spread frosting over the warm rolls with a knife or spatula. Serve immediately."
+  }
+]

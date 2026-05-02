@@ -13,5 +13,10 @@
     "name": "Taco Night",
     "path": "/recipes/taco-night.json",
     "description": "Beef tacos with rice, beans, and toppings."
+  },
+  {
+    "name": "Gluten-Free Cinnamon Rolls",
+    "path": "/recipes/gluten-free-cinnamon-rolls.json",
+    "description": "Yeasted gluten-free dough, cinnamon filling, baked and frosted with cream cheese icing."
   }
 ]
